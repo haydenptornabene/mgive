@@ -215,9 +215,6 @@ for row_idx in range(num_rows):
 # Convert csv to xlsx
 merge_all_to_a_book(glob.glob("out.csv"), fileout)
 
-# Remove the out.csv file the routine produces 
-os.remove('out.csv') 
-
 print ('Your data has been massaged.')
 
 
