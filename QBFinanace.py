@@ -39,11 +39,13 @@ sys.setdefaultencoding("utf8")
 # pip install pyexcel
 # pip install pyexcel-xlsx 
 
-# Dates are being read in as days after 1900. 
-# For example, 42913 = 6/27/2017, 42913 days after Jan 1. 1900.
-# We need to convert these before we do anything extra
 
+
+# unix command: python QBFinance.py mm dd yyyy
+# unix command example: python QBFinance.py 03 02 2017
+							  
 #______________________________________________________________________________________#
+
 
 # Open the desired file
 booksub = open_workbook('1.26.17ActiveCustomersIntranet.xlsx')
@@ -127,6 +129,9 @@ print 'First three files have been outputted.'
 
 
 #______________________________________________________________________________________
+
+# Dates are being read in as days after 1900. 
+# For example, 42913 = 6/27/2017, 42913 days after Jan 1. 1900.
 
 # The above outputs the three files, Active, Inactive, and All. 
 # The below section outputs one additional file, ActiveAfterDate.csv 
