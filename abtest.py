@@ -39,7 +39,12 @@ import random
 # pip install pyexcel
 # pip install pyexcel-xlsx 
 
+
+
 # unix code: python abtest.py mobilesubscribers.file mobiledonations.file biomed.file output.file
+
+
+
 
 ######## PREAMBLE ##########
 
@@ -68,25 +73,25 @@ sheetbio = bookbio.sheet_by_index(0)
 #CREATE THE DICTIONARIES 
 # Create a dictionary with every value from the spreadsheet from the subscriber xlsx
 subkeys = [sheetsub.cell(0, col_index).value for col_index in xrange(sheetsub.ncols)]
-sub_dict = []
+sub_dict1 = []
 for row_index in xrange(1, sheetsub.nrows):
     d = {subkeys[col_index]: sheetsub.cell(row_index, col_index).value 
          for col_index in xrange(sheetsub.ncols)}
-    sub_dict.append(d)
+    sub_dict1.append(d)
 # Create a dictionary with every value from the spreadsheet from the donations xlsx
 usrkeys = [sheetusr.cell(0, col_index).value for col_index in xrange(sheetusr.ncols)]
-usr_dict = []
+usr_dict1 = []
 for row_index in xrange(1, sheetusr.nrows):
     d = {usrkeys[col_index]: sheetusr.cell(row_index, col_index).value 
          for col_index in xrange(sheetusr.ncols)}
-    usr_dict.append(d)
+    usr_dict1.append(d)
 # Create a dictionary with every value from the spreadsheet from the biomed xlsx
 biokeys = [sheetbio.cell(0, col_index).value for col_index in xrange(sheetbio.ncols)]
-bio_dict = []
+bio_dict1 = []
 for row_index in xrange(1, sheetbio.nrows):
     d = {biokeys[col_index]: sheetbio.cell(row_index, col_index).value 
          for col_index in xrange(sheetbio.ncols)}
-    bio_dict.append(d)
+    bio_dict1.append(d)
 
 # REMOVE DUPLICAES 
 # Now that all three text files have been uploaded, we can begin to remove duplicates.
@@ -95,6 +100,49 @@ for row_index in xrange(1, sheetbio.nrows):
 # The sub_dict is all people subscribed in some capacity to Red Cross, the master so to speak
 # We want to remove anyone from sub_dict that appears on usr_dict or bio_dict 
 # (Donated in past 15 days or is a biomed subscriber)
+
+# Isolate T-Mobile, Verizon, AT&T, and Sprint subscribers
+
+sub_dict = []
+usr_dict = []
+bio_dict = []
+
+i = 0
+while i < len(sub_dict1):
+    if 'Sprint' in sub_dict1[i].values():
+        sub_dict.append(sub_dict1[i])
+    if 'Verizon Wireless' in sub_dict1[i].values():
+        sub_dict.append(sub_dict1[i])
+    if 'AT&T Wireless' in sub_dict1[i].values():
+        sub_dict.append(sub_dict1[i])
+    if 'T-Mobile' in sub_dict1[i].values():
+        sub_dict.append(sub_dict1[i])    
+    i += 1
+
+i = 0
+while i < len(usr_dict1):
+    if 'Sprint' in usr_dict1[i].values():
+        usr_dict.append(usr_dict1[i])
+    if 'Verizon Wireless' in usr_dict1[i].values():
+        usr_dict.append(usr_dict1[i])
+    if 'AT&T Wireless' in usr_dict1[i].values():
+        usr_dict.append(usr_dict1[i])
+    if 'T-Mobile' in usr_dict1[i].values():
+        usr_dict.append(usr_dict1[i])    
+    i += 1
+
+i = 0
+while i < len(bio_dict1):
+    if 'Sprint' in bio_dict1[i].values():
+        bio_dict.append(bio_dict1[i])
+    if 'Verizon Wireless' in bio_dict1[i].values():
+        bio_dict.append(bio_dict1[i])
+    if 'AT&T Wireless' in bio_dict1[i].values():
+        bio_dict.append(bio_dict1[i])
+    if 'T-Mobile' in bio_dict1[i].values():
+        bio_dict.append(bio_dict1[i])    
+    i += 1
+
 
 # Extract mobile numbers from each list
 sub_mobiles = [d['Mobile Number'] for d in sub_dict]
@@ -143,21 +191,86 @@ ABlist = alist+blist
 # Randomize list
 random.shuffle(ABlist)
 
+
+# Initalize A25, A10, B25, B10 Variables 
+quarter = len(master_mobiles)/4
+oddquarter = quarter + 1  
+A25 = 'A25'
+B25 = 'B25'
+A10 = 'A10'
+B10 = 'B10'
+a25list = []
+b25list = []
+a10list = []
+b10list = []
+
+if len(master_mobiles) % 2 == 1: # Odd Case
+    a25list = [A25] * quarter
+    b25list = [B25] * oddquarter
+    a10list = [A10] * oddquarter
+    b10list = [B10] * oddquarter
+
+if len(master_mobiles) % 2 == 0: # Even Case
+    a25list = [A25] * quarter
+    b25list = [B25] * quarter
+    a10list = [A10] * quarter
+    b10list = [B10] * quarter
+
+AB2510list = a25list+b25list+a10list+b10list
+random.shuffle(AB2510list)
+
 # We create a dictionary with mobile numbers as the key and A or B as the value.
-cleanned_mobiles_dictionary = dict(zip(master_mobiles, ABlist))
+cleanned_mobiles_dictionary1 = dict(zip(master_mobiles, ABlist))
+
+# We create a dictionary with mobile numbers as the key and A25 or B25 or A10 or B10 as the value.
+cleanned_mobiles_dictionary2 = dict(zip(master_mobiles, AB2510list))
 
 # Print dictionary to csv file to be read into SQL database. 
 with open('ABTestingOutput.csv', 'wb') as csv_file:
     writer = csv.writer(csv_file)
-    for key, value in cleanned_mobiles_dictionary.items():
+    for key, value in cleanned_mobiles_dictionary2.items():
        writer.writerow([key, value])
 
 print 'Your AB Test spreadsheet is ready.'
 
+#_____________________________________________________________________________________
+
+# We want to print out a list of SQL commands to sql executable file
+# Here is the SQL command that will fill the sql executable 
+
+# UPDATE dbo.MobileNumbers SET ABValue = "[ABValue]" WHERE MobileNumber = "[Mobile#]"
+# Where [ABValue] and [Mobile#] are variables. An example is below. 
+
+# UPDATE dbo.MobileNumbers SET ABValue = "A10" WHERE MobileNumber = "(303) 657-3331"
+
+# We want a tool that will iterate through cleanned_mobiles_dictionary2 and populate the sql command
+
+ListOCommands = []
+
+# Build a loop that iterates through Cleanned dictionaries and creates a SQL command with an ABValue and the Phone Number 
+for key, value in cleanned_mobiles_dictionary2.iteritems():
+    Unit =  """UPDATE dbo.MobileNumbers SET ABValue=""" + "\'" + value + "\'" + " WHERE MobileNumber="  + "\'" + key + "\'"
+    ListOCommands.append(Unit) 
+
+# Removing unwanted characters from phone Numbers 
+i = 0
+while i < len(ListOCommands): 
+    ListOCommands[i] = ListOCommands[i].replace('-', '').replace('(', '').replace(') ', '')
+    i += 1
+
+# Print the commands, row by row, in a single column, to the csv.
+
+with open('ABTest_SQLCommands.csv', 'wb') as f:
+    writer = csv.writer(f)
+    for val in ListOCommands:
+        writer.writerow([val])
+
+print 'You SQL csv is also ready.'
 
 
-
-
+# THIS THING IS PRETTY SLOW FOR ANYTHING BIGGER THAN 10,000
+# Need to think about how to make this faster.
+# But it works as is!
 
 
 
